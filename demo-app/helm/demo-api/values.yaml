@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: demo-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+
+ingress:
+  enabled: true
+  host: demo.local
+
+config:
+  POSTGRES_DB: demo
+  POSTGRES_HOST: postgres.db.svc.cluster.local
+
+secrets:
+  POSTGRES_USER: demo
+  POSTGRES_PASSWORD: demo

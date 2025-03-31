@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_MODE: production  # Application environment mode
+  TIMEOUT: "30"         # Timeout value as string

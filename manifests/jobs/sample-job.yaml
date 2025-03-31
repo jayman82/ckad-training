@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: hello
+          image: busybox
+          command: ["echo", "Hello CKAD"]  # Simple job prints a message
+      restartPolicy: Never
+  backoffLimit: 4  # Retry job on failure up to 4 times

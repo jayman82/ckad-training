@@ -1,0 +1,4 @@
+tenant: alpha
+name: alpha-api
+image: nginx:1.25
+replicas: 2

@@ -1,83 +1,94 @@
 
-# 🧪 CKAD Lab Project – Kubernetes Learning Toolkit
+# 🧪 CKAD Lab – Demo App & Troubleshooting Guide
 
-Welcome to the ultimate hands-on Kubernetes learning environment, built to help you prepare for the **Certified Kubernetes Application Developer (CKAD)** exam and beyond!
+## 📦 Deployable App Stack (demo-api + postgres)
 
----
-
-## 🎯 What's Included
-
-### ✅ Core Modules
-- **Aggressively Commented YAML** for:
-  - Pods, Deployments, Services, Ingress, Volumes, ConfigMaps, Secrets, and more
-- **Multi-Tenant Templating** using Jinja2 + values files
-- **Environment-Aware Helm Charts** (`dev`, `staging`, `prod`)
-- **DevContainer** and `.gitignore` for GitHub/VS Code use
-
-### 🔧 Break-Fix Challenge Labs (1–10)
-Pre-built broken scenarios to fix, including:
-- CrashLoopBackOff
-- Probes and Jobs
-- Volume/RBAC/Ingress issues
-- Secret misconfigurations
-- Includes manifest + README for each scenario
-
-### 🌐 Deployable Demo App Stack
-- Flask API with `/write` & `/read`
-- PostgreSQL StatefulSet with PVC
-- Namespaces, Secrets, ConfigMaps, Services, Ingress
-- `deploy.sh` and `teardown.sh` for easy local testing
-- Works great with Rancher Desktop
+This demo includes:
+- A Flask API with `/write` and `/read`
+- PostgreSQL as a StatefulSet
+- Namespaces: `app`, `db`
+- PVC-backed storage, ConfigMap, Secret, Service, Ingress
 
 ---
 
-## 🛠️ How to Use
+## 🚀 How to Deploy
 
-### 🚀 Quick Start (Standalone)
+1. **Build the Docker Image** (if using local version):
 ```bash
-cd scripts/
-bash deploy.sh  # deploys namespaces + demo stack
-bash teardown.sh  # cleans up everything
+cd demo-app/app
+docker build -t demo-api:latest .
 ```
 
-### 🔨 Try a Break-Fix Lab
+2. **Switch to the project root and run:**
 ```bash
-cd breakfix/scenario-01/
-kubectl apply -f manifest.yaml
-# Follow the README to fix and learn!
+bash scripts/deploy.sh
 ```
 
-### 📦 Install with Helm
+3. **Access the App** (if using Ingress):
+- URL: `http://demo.local` (requires local DNS like `/etc/hosts`)
+- Or use `kubectl port-forward`:
 ```bash
-helm install demo-api ./demo-app/helm/demo-api -n app --create-namespace -f demo-app/helm/demo-api/values-dev.yaml
+kubectl port-forward -n app svc/demo-api 8080:80
 ```
 
 ---
 
-## 🧰 Developer Environment
-This project includes:
-- `.devcontainer` for VS Code with `kubectl`, `helm`, `kustomize`
-- Shell aliases + autocompletion in `setup-aliases.sh`
-- Templating system (`render_templates.py`) for YAML generation from values
+## 🧼 How to Tear Down
+From the project root:
+```bash
+bash scripts/teardown.sh
+```
 
 ---
 
-## 📚 Learn & Customize
-- `docs/` includes glossary, cheat sheet, and walk-throughs
-- Use templating to create multi-tenant deployments with:
-  ```bash
-  python scripts/render_templates.py values/tenant1.yaml templates/deployment.j2
-  ```
+## 🧰 Common Issues & Fixes
+
+### ❌ `ImagePullBackOff`
+You didn’t build `demo-api:latest` OR your cluster can’t access it.
+- Make sure you ran:
+```bash
+docker build -t demo-api:latest .
+```
+- If using `kind`, run:
+```bash
+kind load docker-image demo-api:latest
+```
+
+### ❌ `CreateContainerConfigError` on `postgres-0`
+Usually means missing secrets or configmap.
+Check:
+```bash
+kubectl describe pod postgres-0 -n db
+kubectl get secrets -n db
+```
 
 ---
 
-## 🤝 Contributing & Extending
-This project is modular—use it to:
-- Practice CKAD tasks
-- Train new Kubernetes engineers
-- Develop your own Helm charts or test suites
+## 🌐 Alternative: Use a Public Image (Optional)
+
+You can use this prebuilt image:
+```yaml
+image:
+  repository: ghcr.io/your-org/demo-api
+  tag: latest
+```
+
+Update your `deployment.yaml` or `values.yaml` to reference it instead of `demo-api:latest`.
 
 ---
 
-Built to be fully self-contained, flexible, and exam-focused.  
-Happy learning and good luck with your CKAD! 🎓🐳
+## 📁 Where to Deploy From
+
+Always run deploy/teardown scripts from the project root:
+```bash
+ckad-lab/
+├── demo-app/
+├── scripts/
+├── k8s/
+```
+
+Otherwise, `k8s/base` won’t be found.
+
+---
+
+Happy learning! 🧠🐳💻
